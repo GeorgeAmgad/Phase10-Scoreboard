@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:phase_10_score_tracker/database_helper.dart';
+import 'package:phase_10_score_tracker/controller/scoreboard_controller.dart';
 import 'package:phase_10_score_tracker/model/mode.dart';
+import 'package:phase_10_score_tracker/model/scoreboard.dart';
 import 'package:phase_10_score_tracker/views/widgets/misc.dart';
 
 import 'widgets/sliver_header.dart';
@@ -28,7 +29,11 @@ class _SliverAppBarSnapState extends State<HomePage> {
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         onPressed: () async {
-          await DatabaseHelper.instance.addMode(Mode(name: "yalaaaaaa"));
+          // await DatabaseHelper.instance.addMode(Mode(name: "modern"));
+          await ScoreboardCL.addScoreboard(
+              Scoreboard(title: "board 5", mode: Mode(id: 2, name: 'twist')));
+
+
           setState(() {
             isEmpty = !isEmpty;
           });
@@ -44,16 +49,16 @@ class _SliverAppBarSnapState extends State<HomePage> {
     );
   }
 
-  Card _buildCard(int index) {
-    return Card(
-      elevation: 4,
-      margin: EdgeInsets.only(left: 12, right: 12, top: 12),
-      child: Container(
-        margin: EdgeInsets.symmetric(vertical: 24, horizontal: 12),
-        child: Text("Item $index"),
-      ),
-    );
-  }
+  // Card _buildCard(int index) {
+  //   return Card(
+  //     elevation: 4,
+  //     margin: EdgeInsets.only(left: 12, right: 12, top: 12),
+  //     child: Container(
+  //       margin: EdgeInsets.symmetric(vertical: 24, horizontal: 12),
+  //       child: Text("Item $index"),
+  //     ),
+  //   );
+  // }
 
   void _snapAppbar() {
     final scrollDistance = maxHeight - minHeight;
@@ -67,7 +72,7 @@ class _SliverAppBarSnapState extends State<HomePage> {
     }
   }
 
-  FutureBuilder<List<Mode>> _buildScrollView() {
+  FutureBuilder<List<Scoreboard>> _buildScrollView() {
     final appBar = SliverAppBar(
       pinned: true,
       stretch: true,
@@ -79,12 +84,12 @@ class _SliverAppBarSnapState extends State<HomePage> {
       expandedHeight: maxHeight - MediaQuery.of(context).padding.top,
     );
     final emptyList = SliverFillRemaining(
-        hasScrollBody: false,
-        child: buildEmptyCenterText("Tap + to created a new scoreboard"),
-      );
+      hasScrollBody: false,
+      child: buildEmptyCenterText("Tap + to created a new scoreboard"),
+    );
 
-    return FutureBuilder<List<Mode>>(
-        future: DatabaseHelper.instance.getModes(),
+    return FutureBuilder<List<Scoreboard>>(
+        future: ScoreboardCL.getScoreboards(),
         builder: (context, snapshot) {
           Widget sliverList;
           if (!snapshot.hasData) {
@@ -108,18 +113,17 @@ class _SliverAppBarSnapState extends State<HomePage> {
         });
   }
 
-  SliverList _buildScoreboardsList(List<Mode> modesList) {
+  SliverList _buildScoreboardsList(List<Scoreboard> boardList) {
     return SliverList(
-        delegate: SliverChildListDelegate(modesList.map((mode) {
+        delegate: SliverChildListDelegate(boardList.map((board) {
       return Card(
         elevation: 4,
         margin: EdgeInsets.only(left: 12, right: 12, top: 12),
         child: Container(
           margin: EdgeInsets.symmetric(vertical: 24, horizontal: 12),
-          child: Text(mode.name),
+          child: Text("${board.title}, ${board.id}, ${board.mode.name}"),
         ),
       );
     }).toList()));
   }
-
 }
