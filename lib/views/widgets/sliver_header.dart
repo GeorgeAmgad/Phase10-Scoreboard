@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'dropdown_menu.dart';
 
 class SliverHeader extends StatelessWidget {
@@ -49,10 +50,10 @@ class SliverHeader extends StatelessWidget {
               margin: EdgeInsets.only(top: 52, left: 18),
               child: Text(
                 text,
-                style: TextStyle(
+                style: GoogleFonts.caveat(
                     fontSize:
-                        Tween<double>(begin: 18, end: 52).evaluate(animation),
-                    fontWeight: FontWeight.normal,
+                        Tween<double>(begin: 22, end: 68).evaluate(animation),
+                    fontWeight: FontWeight.w800,
                     color: Colors.white),
               ),
             )),

@@ -1,62 +1,49 @@
-import 'package:phase_10_score_tracker/controller/phase_controller.dart';
-import 'package:phase_10_score_tracker/controller/player_controller.dart';
-import 'package:phase_10_score_tracker/database/database_helper.dart';
+import 'package:moor/moor.dart';
+import 'package:phase_10_score_tracker/database/database.dart';
 
 import 'mode.dart';
-import 'player.dart';
 
-final String boardsTable = 'scoreboards';
+part 'scoreboard.g.dart';
 
-class BoardFields {
-  static const String id = '_id';
-  static const String title = 'title';
-  static const String modeId = 'mode_id';
+class Scoreboards extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  IntColumn get modeId => integer().customConstraint('REFERENCES modes(id)')();
+
+  TextColumn get title => text()();
+
+  IntColumn get round => integer().withDefault(Constant(1))();
+
+  DateTimeColumn get creationDate => dateTime()();
 }
 
-class Scoreboard {
-  final int? id;
-  final String title;
+@UseDao(tables: [Scoreboards, Modes])
+class ScoreboardsDao extends DatabaseAccessor<AppDatabase>
+    with _$ScoreboardsDaoMixin {
+  ScoreboardsDao(AppDatabase db) : super(db);
+
+  Future insertBoard(Insertable<Scoreboard> board) =>
+      into(scoreboards).insert(board);
+
+  Future deleteBoard(Insertable<Scoreboard> board) =>
+      delete(scoreboards).delete(board);
+
+  Stream<List<ScoreboardWithMode>> scoreboardsWithMode() {
+    final query = select(scoreboards)
+        .join([innerJoin(modes, modes.id.equalsExp(scoreboards.modeId))]);
+
+    return query.watch().map((rows) {
+      return rows.map((row) {
+        return ScoreboardWithMode(
+            scoreboard: row.readTable(scoreboards), mode: row.readTable(modes));
+      }).toList();
+    });
+  }
+}
+
+class ScoreboardWithMode {
+  final Scoreboard scoreboard;
   final Mode mode;
 
-  PlayerCL controller = PlayerCL();
-
-
-  List<String>? _playersNames;
-  List<Player>? _players;
-
-  Scoreboard({this.id, required this.title, required this.mode});
-
-  Future<List<String>> get playersNames async =>
-      _playersNames ??= await PlayerCL.getPlayersNames(id!);
-
-  Future<List<Player>> get players async =>
-      _players ??= await PlayerCL.getPLayers(id!);
-
-  factory Scoreboard.fromJson(Map<String, dynamic> json) => Scoreboard(
-      id: json['${BoardFields.id}'],
-      title: json['${BoardFields.title}'],
-      mode: Mode(
-          id: json['${BoardFields.modeId}'], name: json['${ModeFields.name}']));
-
-  Map<String, dynamic> toJson() {
-    return {
-      '${BoardFields.id}': id,
-      '${BoardFields.title}': title,
-      '${BoardFields.modeId}': mode.id
-    };
-  }
-
-  Future<bool> addNewPlayer(String name) async {
-    try {
-      Player player = Player(
-          name: name,
-          boardId: this.id!,
-          phase: await PhaseCL.getPhase(mode.id!, 1));
-      await PlayerCL.addPlayer(player);
-      return true;
-    } catch (e) {
-      print(e);
-      return false;
-    }
-  }
+  ScoreboardWithMode({required this.scoreboard, required this.mode});
 }

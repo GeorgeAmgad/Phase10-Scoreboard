@@ -1,45 +1,24 @@
-import 'phase.dart';
+import 'package:moor/moor.dart';
+import 'package:phase_10_score_tracker/database/database.dart';
 
-final String playersTable = 'players';
+part 'player.g.dart';
 
-class PlayerFields {
-  static const String id = '_id';
-  static const String name = 'name';
-  static const String boardId = 'board_id';
-  static const String phaseId = 'phase_id';
+class Players extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  TextColumn get name => text()();
+
+  IntColumn get boardId =>
+      integer().customConstraint('REFERENCES scoreboards(id)')();
+
+  IntColumn get phaseId =>
+      integer().customConstraint('REFERENCES phases(id)')();
 }
 
-class Player {
-  final int? id;
-  final String name;
-  final int boardId;
-  Phase phase;
+@UseDao(tables: [Players])
+class PlayersDao extends DatabaseAccessor<AppDatabase>
+    with _$PlayersDaoMixin {
+  PlayersDao(AppDatabase db) : super(db);
 
-  Player(
-      {this.id,
-      required this.name,
-      required this.boardId,
-      required this.phase});
-
-  factory Player.fromJson(Map<String, dynamic> json) => Player(
-      id: json['${PlayerFields.id}'],
-      name: json['${PlayerFields.name}'],
-      boardId: json['${PlayerFields.boardId}'],
-      phase: Phase(
-          id: json['${PlayerFields.phaseId}'],
-          number: json['${PhaseFields.number}'],
-          modeId: json['${PhaseFields.modeId}'],
-          statement: json['${PhaseFields.statement}']
-      )
-  );
-
-  Map<String, dynamic> toJson() {
-    return {
-      '${PlayerFields.id}': id,
-      '${PlayerFields.name}': name,
-      '${PlayerFields.boardId}': boardId,
-      '${PlayerFields.phaseId}': phase.id
-    };
-  }
 
 }

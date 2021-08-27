@@ -1,24 +1,20 @@
-final String modesTable = 'modes';
+import 'package:moor/moor.dart';
+import 'package:phase_10_score_tracker/database/database.dart';
 
-class ModeFields {
-  static const String id = '_id';
-  static const String name = 'name';
+part 'mode.g.dart';
+
+
+class Modes extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  TextColumn get name => text().withLength(min: 1, max: 50)();
 }
 
 
-class Mode {
-  final int? id;
-  final String name;
+@UseDao(tables: [Modes])
+class ModesDao extends DatabaseAccessor<AppDatabase>
+    with _$ModesDaoMixin {
+  ModesDao(AppDatabase db) : super(db);
 
-  Mode({this.id, required this.name});
-
-  factory Mode.fromJson(Map<String, dynamic> json) =>
-      Mode(id: json['${ModeFields.id}'], name: json['${ModeFields.name}']);
-
-  Map<String, dynamic> toJson() {
-    return {
-      '${ModeFields.id}': id,
-      '${ModeFields.name}': name
-    };
-  }
+  Future<List<Mode>> getAllModes() => select(modes).get();
 }

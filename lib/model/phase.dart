@@ -1,36 +1,28 @@
-final String phasesTable = 'phases';
+import 'package:moor/moor.dart';
+import 'package:phase_10_score_tracker/database/database.dart';
 
-class PhaseFields {
-  static const String id = '_id';
-  static const String modeId = 'Mode_id';
-  static const String number = 'number';
-  static const String statement = 'statement';
+part 'phase.g.dart';
+
+class Phases extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  IntColumn get modeId => integer().customConstraint('REFERENCES modes(id)')();
+
+  TextColumn get statement => text()();
+
+  IntColumn get number => integer()();
 }
 
-class Phase {
-  final int? id;
-  final int modeId;
-  final int number;
-  final String statement;
+@UseDao(tables: [Phases])
+class PhasesDao extends DatabaseAccessor<AppDatabase> with _$PhasesDaoMixin {
+  PhasesDao(AppDatabase db) : super(db);
 
-  Phase(
-      {this.id,
-      required this.number,
-      required this.modeId,
-      required this.statement});
-
-  factory Phase.fromJson(Map<String, dynamic> json) => Phase(
-      id: json['${PhaseFields.id}'],
-      modeId: json['${PhaseFields.modeId}'],
-      number: json['${PhaseFields.number}'],
-      statement: json['${PhaseFields.statement}']);
-
-  Map<String, dynamic> toJson() {
-    return {
-      '${PhaseFields.id}': id,
-      '${PhaseFields.modeId}': modeId,
-      '${PhaseFields.number}': number,
-      '${PhaseFields.statement}': statement
-    };
+  Future<List<Phase>> getAllPhasesByMode(int modeId) {
+    return (select(phases)
+          ..orderBy(
+            ([(ph) => OrderingTerm(expression: ph.number)]),
+          )
+          ..where((ph) => ph.modeId.equals(modeId)))
+        .get();
   }
 }

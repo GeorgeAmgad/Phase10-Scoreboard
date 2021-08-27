@@ -11,17 +11,27 @@ class DropDownMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     return PopupMenuButton<Options>(
       shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(12))),
-      elevation: 32,
+          borderRadius: BorderRadius.all(Radius.circular(8))),
+      elevation: 16,
       offset: Offset(0, 64),
       icon: Icon(Icons.more_vert, color: Colors.white),
       itemBuilder: (BuildContext context) => <PopupMenuEntry<Options>>[
-        PopupMenuItem<Options>(value: Options.rules, child: Text("Game rules")),
-        PopupMenuDivider(),
         PopupMenuItem<Options>(
-            value: Options.themes, child: Text("Change theme")),
-        PopupMenuDivider(),
-        PopupMenuItem<Options>(value: Options.about, child: Text("About")),
+            value: Options.rules,
+            child: ListTile(
+              title: Text("Game rules"),
+              leading: Icon(Icons.rule),
+            )),
+        PopupMenuItem<Options>(
+            value: Options.themes,
+            child: ListTile(
+              title: Text("Theme"),
+              leading: Icon(Icons.dark_mode),
+            )),
+        PopupMenuItem<Options>(
+            value: Options.about, child: ListTile(
+            title: Text("About"),
+        leading: Icon(Icons.info_outline),)),
       ],
       onSelected: (Options result) {
         switch (result) {

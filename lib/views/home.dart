@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:phase_10_score_tracker/controller/scoreboard_controller.dart';
-import 'package:phase_10_score_tracker/model/mode.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:moor/moor.dart' as moor;
+import 'package:phase_10_score_tracker/database/database.dart';
 import 'package:phase_10_score_tracker/model/scoreboard.dart';
 import 'package:phase_10_score_tracker/views/widgets/misc.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'widgets/sliver_header.dart';
 
@@ -15,6 +17,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _SliverAppBarSnapState extends State<HomePage> {
+  final dao = AppDatabase().scoreboardsDao;
+
   final _controller = ScrollController();
 
   double get maxHeight => 226 + MediaQuery.of(context).padding.top;
@@ -30,9 +34,13 @@ class _SliverAppBarSnapState extends State<HomePage> {
         child: Icon(Icons.add),
         onPressed: () async {
           // await DatabaseHelper.instance.addMode(Mode(name: "modern"));
-          await ScoreboardCL.addScoreboard(
-              Scoreboard(title: "board 5", mode: Mode(id: 2, name: 'twist')));
+          // await ScoreboardCL.addScoreboard(
+          //     Scoreboard(title: "board 5", mode: Mode(id: 2, name: 'twist')));
 
+          await dao.insertBoard(ScoreboardsCompanion(
+              modeId: moor.Value(2),
+              title: moor.Value("Midnight game"),
+              creationDate: moor.Value(DateTime.now())));
 
           setState(() {
             isEmpty = !isEmpty;
@@ -72,15 +80,20 @@ class _SliverAppBarSnapState extends State<HomePage> {
     }
   }
 
-  FutureBuilder<List<Scoreboard>> _buildScrollView() {
+  StreamBuilder<List<ScoreboardWithMode>> _buildScrollView() {
     final appBar = SliverAppBar(
       pinned: true,
       stretch: true,
       collapsedHeight: 65,
-      flexibleSpace: SliverHeader(
-          maxHeight: maxHeight,
-          minHeight: minHeight,
-          headerText: "Scoreboards"),
+      flexibleSpace:
+          // FlexibleSpaceBar(
+          //   title: Text("Scoreboards"),
+          // ),
+
+          SliverHeader(
+              maxHeight: maxHeight,
+              minHeight: minHeight,
+              headerText: "Scoreboards"),
       expandedHeight: maxHeight - MediaQuery.of(context).padding.top,
     );
     final emptyList = SliverFillRemaining(
@@ -88,8 +101,8 @@ class _SliverAppBarSnapState extends State<HomePage> {
       child: buildEmptyCenterText("Tap + to created a new scoreboard"),
     );
 
-    return FutureBuilder<List<Scoreboard>>(
-        future: ScoreboardCL.getScoreboards(),
+    return StreamBuilder<List<ScoreboardWithMode>>(
+        stream: dao.scoreboardsWithMode(),
         builder: (context, snapshot) {
           Widget sliverList;
           if (!snapshot.hasData) {
@@ -108,22 +121,63 @@ class _SliverAppBarSnapState extends State<HomePage> {
           return CustomScrollView(
             physics: AlwaysScrollableScrollPhysics(),
             controller: _controller,
-            slivers: [appBar, sliverList],
+            slivers: [
+              appBar,
+              SliverToBoxAdapter(
+                child: Container(
+                  margin: EdgeInsets.only(top: 8),
+                ),
+              ),
+              sliverList,
+              // to avoid overlaying with the button
+              SliverToBoxAdapter(
+                  child: Container(margin: EdgeInsets.only(top: 72)))
+            ],
           );
         });
   }
 
-  SliverList _buildScoreboardsList(List<Scoreboard> boardList) {
+  SliverList _buildScoreboardsList(List<ScoreboardWithMode> boardList) {
     return SliverList(
-        delegate: SliverChildListDelegate(boardList.map((board) {
-      return Card(
-        elevation: 4,
-        margin: EdgeInsets.only(left: 12, right: 12, top: 12),
-        child: Container(
-          margin: EdgeInsets.symmetric(vertical: 24, horizontal: 12),
-          child: Text("${board.title}, ${board.id}, ${board.mode.name}"),
+        delegate: SliverChildListDelegate(boardList.map((entry) {
+      return Slidable(
+        actionPane: SlidableDrawerActionPane(),
+        secondaryActions: <Widget>[
+          IconSlideAction(
+            caption: 'Delete',
+            color: Theme.of(context).canvasColor,
+            icon: Icons.delete,
+            onTap: () => dao.deleteBoard(entry.scoreboard),
+          )
+        ],
+        child: Card(
+          elevation: 2,
+          child: ListTile(
+            contentPadding: EdgeInsets.only(top: 8, left: 18, right: 18, bottom: 9),
+            title: Text(
+              entry.scoreboard.title,
+              style: GoogleFonts.pangolin(
+                  fontSize: 26,
+                  letterSpacing: 0.5
+              ),
+            ),
+            isThreeLine: true,
+            subtitle: Text(
+                "Mode: ${entry.mode.name}\nRound: ${entry.scoreboard.round}",
+            style: TextStyle(fontSize: 15),),
+            trailing: Text(_parseDate(entry.scoreboard.creationDate)),
+          ),
         ),
       );
     }).toList()));
   }
+}
+
+String _parseDate(DateTime dateTime) {
+  var array = dateTime.toString().split('-');
+  // extract the day and remove the trailing time
+  var day = array[2].split(' ')[0];
+  // extract month
+  var month = array[1];
+  return "$day/$month";
 }
