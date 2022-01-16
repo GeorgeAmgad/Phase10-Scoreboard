@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:phase_10_score_tracker/theme.dart';
+import 'package:phase_10_score_tracker/theme-provider.dart';
+import 'package:phase_10_score_tracker/themes.dart';
 import 'package:provider/provider.dart';
 
-import '../../theme.dart';
+import '../../theme-provider.dart';
 
-enum Options { rules, themes, about }
+enum Options { RULES, THEMES, ABOUT }
 
 class DropDownMenu extends StatelessWidget {
   @override
@@ -17,33 +18,33 @@ class DropDownMenu extends StatelessWidget {
       icon: Icon(Icons.more_vert, color: Colors.white),
       itemBuilder: (BuildContext context) => <PopupMenuEntry<Options>>[
         PopupMenuItem<Options>(
-            value: Options.rules,
+            value: Options.RULES,
             child: ListTile(
               title: Text("Game rules"),
               leading: Icon(Icons.rule),
             )),
         PopupMenuItem<Options>(
-            value: Options.themes,
+            value: Options.THEMES,
             child: ListTile(
               title: Text("Theme"),
               leading: Icon(Icons.dark_mode),
             )),
         PopupMenuItem<Options>(
-            value: Options.about, child: ListTile(
+            value: Options.ABOUT, child: ListTile(
             title: Text("About"),
         leading: Icon(Icons.info_outline),)),
       ],
       onSelected: (Options result) {
         switch (result) {
-          case Options.rules:
+          case Options.RULES:
             {}
             break;
 
-          case Options.themes:
+          case Options.THEMES:
             _showThemeBottomSheet(context);
             break;
 
-          case Options.about:
+          case Options.ABOUT:
             {}
             break;
 
@@ -67,8 +68,6 @@ class DropDownMenu extends StatelessWidget {
         context: context,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         builder: (BuildContext context) {
-          List<String> entries = themeProvider.themeNames;
-          List<IconData> icons = themeProvider.themeIcons;
           return Container(
             margin: EdgeInsets.only(top: 12),
             child: DraggableScrollableSheet(
@@ -78,19 +77,16 @@ class DropDownMenu extends StatelessWidget {
               expand: false,
               builder:
                   (BuildContext context, ScrollController scrollController) {
+                List<AppTheme> themes = AppThemes.getAllThemes();
                 return ListView.separated(
                   controller: scrollController,
-                  itemCount: entries.length,
+                  itemCount: themes.length,
                   itemBuilder: (BuildContext context, int index) {
                     return ListTile(
-                      leading: Icon(icons[index]),
-                      title: Text('${entries[index]}'),
+                      leading: Icon(themes[index].icon),
+                      title: Text('${themes[index].name}'),
                       onTap: () {
-                        try {
-                          themeProvider.setTheme(entries[index]);
-                        } catch (e) {
-                          print("something happened!");
-                        }
+                        themeProvider.setTheme(themes[index].name);
                       },
                     );
                   },

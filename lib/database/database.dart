@@ -5,6 +5,7 @@ import 'package:moor/moor.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:phase_10_score_tracker/model/mode.dart';
+import 'package:phase_10_score_tracker/model/score.dart';
 import 'package:phase_10_score_tracker/model/phase.dart';
 import 'package:phase_10_score_tracker/model/player.dart';
 import 'package:phase_10_score_tracker/model/scoreboard.dart';
@@ -21,8 +22,8 @@ LazyDatabase _openConnection() {
 }
 
 @UseMoor(
-    tables: [Modes, Phases, Scoreboards, Players],
-    daos: [ModesDao, PhasesDao, ScoreboardsDao, PlayersDao])
+    tables: [Modes, Phases, Scoreboards, Players, Scores],
+    daos: [ModesDao, PhasesDao, ScoreboardsDao, PlayersDao, ScoresDao])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
@@ -41,7 +42,6 @@ class AppDatabase extends _$AppDatabase {
             await into(modes).insert(ModesCompanion(name: Value('Twist')));
         final islandId =
             await into(modes).insert(ModesCompanion(name: Value('Island Paradise')));
-
         final tenPlusTen =
         await into(modes).insert(ModesCompanion(name: Value('10 + 10')));
 

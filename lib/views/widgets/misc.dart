@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
 
-
-
 Center buildEmptyCenterText(String text) {
   return Center(
       child: Opacity(

@@ -958,20 +958,270 @@ class $PlayersTable extends Players with TableInfo<$PlayersTable, Player> {
   }
 }
 
+class Score extends DataClass implements Insertable<Score> {
+  final int playerId;
+  final int boardId;
+  final int round;
+  final int score;
+  Score(
+      {required this.playerId,
+      required this.boardId,
+      required this.round,
+      required this.score});
+  factory Score.fromData(Map<String, dynamic> data, GeneratedDatabase db,
+      {String? prefix}) {
+    final effectivePrefix = prefix ?? '';
+    return Score(
+      playerId: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}player_id'])!,
+      boardId: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}board_id'])!,
+      round: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}round'])!,
+      score: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}score'])!,
+    );
+  }
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['player_id'] = Variable<int>(playerId);
+    map['board_id'] = Variable<int>(boardId);
+    map['round'] = Variable<int>(round);
+    map['score'] = Variable<int>(score);
+    return map;
+  }
+
+  ScoresCompanion toCompanion(bool nullToAbsent) {
+    return ScoresCompanion(
+      playerId: Value(playerId),
+      boardId: Value(boardId),
+      round: Value(round),
+      score: Value(score),
+    );
+  }
+
+  factory Score.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
+    return Score(
+      playerId: serializer.fromJson<int>(json['playerId']),
+      boardId: serializer.fromJson<int>(json['boardId']),
+      round: serializer.fromJson<int>(json['round']),
+      score: serializer.fromJson<int>(json['score']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'playerId': serializer.toJson<int>(playerId),
+      'boardId': serializer.toJson<int>(boardId),
+      'round': serializer.toJson<int>(round),
+      'score': serializer.toJson<int>(score),
+    };
+  }
+
+  Score copyWith({int? playerId, int? boardId, int? round, int? score}) =>
+      Score(
+        playerId: playerId ?? this.playerId,
+        boardId: boardId ?? this.boardId,
+        round: round ?? this.round,
+        score: score ?? this.score,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('Score(')
+          ..write('playerId: $playerId, ')
+          ..write('boardId: $boardId, ')
+          ..write('round: $round, ')
+          ..write('score: $score')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => $mrjf($mrjc(playerId.hashCode,
+      $mrjc(boardId.hashCode, $mrjc(round.hashCode, score.hashCode))));
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Score &&
+          other.playerId == this.playerId &&
+          other.boardId == this.boardId &&
+          other.round == this.round &&
+          other.score == this.score);
+}
+
+class ScoresCompanion extends UpdateCompanion<Score> {
+  final Value<int> playerId;
+  final Value<int> boardId;
+  final Value<int> round;
+  final Value<int> score;
+  const ScoresCompanion({
+    this.playerId = const Value.absent(),
+    this.boardId = const Value.absent(),
+    this.round = const Value.absent(),
+    this.score = const Value.absent(),
+  });
+  ScoresCompanion.insert({
+    required int playerId,
+    required int boardId,
+    required int round,
+    required int score,
+  })  : playerId = Value(playerId),
+        boardId = Value(boardId),
+        round = Value(round),
+        score = Value(score);
+  static Insertable<Score> custom({
+    Expression<int>? playerId,
+    Expression<int>? boardId,
+    Expression<int>? round,
+    Expression<int>? score,
+  }) {
+    return RawValuesInsertable({
+      if (playerId != null) 'player_id': playerId,
+      if (boardId != null) 'board_id': boardId,
+      if (round != null) 'round': round,
+      if (score != null) 'score': score,
+    });
+  }
+
+  ScoresCompanion copyWith(
+      {Value<int>? playerId,
+      Value<int>? boardId,
+      Value<int>? round,
+      Value<int>? score}) {
+    return ScoresCompanion(
+      playerId: playerId ?? this.playerId,
+      boardId: boardId ?? this.boardId,
+      round: round ?? this.round,
+      score: score ?? this.score,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (playerId.present) {
+      map['player_id'] = Variable<int>(playerId.value);
+    }
+    if (boardId.present) {
+      map['board_id'] = Variable<int>(boardId.value);
+    }
+    if (round.present) {
+      map['round'] = Variable<int>(round.value);
+    }
+    if (score.present) {
+      map['score'] = Variable<int>(score.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ScoresCompanion(')
+          ..write('playerId: $playerId, ')
+          ..write('boardId: $boardId, ')
+          ..write('round: $round, ')
+          ..write('score: $score')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ScoresTable extends Scores with TableInfo<$ScoresTable, Score> {
+  final GeneratedDatabase _db;
+  final String? _alias;
+  $ScoresTable(this._db, [this._alias]);
+  final VerificationMeta _playerIdMeta = const VerificationMeta('playerId');
+  late final GeneratedColumn<int?> playerId = GeneratedColumn<int?>(
+      'player_id', aliasedName, false,
+      typeName: 'INTEGER',
+      requiredDuringInsert: true,
+      $customConstraints: 'REFERENCES players(id)');
+  final VerificationMeta _boardIdMeta = const VerificationMeta('boardId');
+  late final GeneratedColumn<int?> boardId = GeneratedColumn<int?>(
+      'board_id', aliasedName, false,
+      typeName: 'INTEGER',
+      requiredDuringInsert: true,
+      $customConstraints: 'REFERENCES scoreboards(id)');
+  final VerificationMeta _roundMeta = const VerificationMeta('round');
+  late final GeneratedColumn<int?> round = GeneratedColumn<int?>(
+      'round', aliasedName, false,
+      typeName: 'INTEGER', requiredDuringInsert: true);
+  final VerificationMeta _scoreMeta = const VerificationMeta('score');
+  late final GeneratedColumn<int?> score = GeneratedColumn<int?>(
+      'score', aliasedName, false,
+      typeName: 'INTEGER', requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [playerId, boardId, round, score];
+  @override
+  String get aliasedName => _alias ?? 'scores';
+  @override
+  String get actualTableName => 'scores';
+  @override
+  VerificationContext validateIntegrity(Insertable<Score> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('player_id')) {
+      context.handle(_playerIdMeta,
+          playerId.isAcceptableOrUnknown(data['player_id']!, _playerIdMeta));
+    } else if (isInserting) {
+      context.missing(_playerIdMeta);
+    }
+    if (data.containsKey('board_id')) {
+      context.handle(_boardIdMeta,
+          boardId.isAcceptableOrUnknown(data['board_id']!, _boardIdMeta));
+    } else if (isInserting) {
+      context.missing(_boardIdMeta);
+    }
+    if (data.containsKey('round')) {
+      context.handle(
+          _roundMeta, round.isAcceptableOrUnknown(data['round']!, _roundMeta));
+    } else if (isInserting) {
+      context.missing(_roundMeta);
+    }
+    if (data.containsKey('score')) {
+      context.handle(
+          _scoreMeta, score.isAcceptableOrUnknown(data['score']!, _scoreMeta));
+    } else if (isInserting) {
+      context.missing(_scoreMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
+  @override
+  Score map(Map<String, dynamic> data, {String? tablePrefix}) {
+    return Score.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+  }
+
+  @override
+  $ScoresTable createAlias(String alias) {
+    return $ScoresTable(_db, alias);
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
   late final $ModesTable modes = $ModesTable(this);
   late final $PhasesTable phases = $PhasesTable(this);
   late final $ScoreboardsTable scoreboards = $ScoreboardsTable(this);
   late final $PlayersTable players = $PlayersTable(this);
+  late final $ScoresTable scores = $ScoresTable(this);
   late final ModesDao modesDao = ModesDao(this as AppDatabase);
   late final PhasesDao phasesDao = PhasesDao(this as AppDatabase);
   late final ScoreboardsDao scoreboardsDao =
       ScoreboardsDao(this as AppDatabase);
   late final PlayersDao playersDao = PlayersDao(this as AppDatabase);
+  late final ScoresDao scoresDao = ScoresDao(this as AppDatabase);
   @override
   Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [modes, phases, scoreboards, players];
+      [modes, phases, scoreboards, players, scores];
 }

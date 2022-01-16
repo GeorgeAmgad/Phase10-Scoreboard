@@ -123,15 +123,7 @@ class _SliverAppBarSnapState extends State<HomePage> {
             controller: _controller,
             slivers: [
               appBar,
-              SliverToBoxAdapter(
-                child: Container(
-                  margin: EdgeInsets.only(top: 8),
-                ),
-              ),
-              sliverList,
-              // to avoid overlaying with the button
-              SliverToBoxAdapter(
-                  child: Container(margin: EdgeInsets.only(top: 72)))
+              sliverList
             ],
           );
         });
